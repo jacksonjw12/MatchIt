@@ -1,0 +1,30 @@
+{
+  "name": "matchit",
+  "version": "1.0.0",
+  "description": "Online version of spot it",
+  "main": "index.js",
+  "dependencies": {
+    "express": "^4.16.4",
+    "express-session": "^1.15.6",
+    "express-socket.io-session": "^1.3.5",
+    "jquery": "^3.3.1",
+    "node-emoji": "^1.8.1",
+    "socket.io": "^2.2.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js",
+    "generateCards": "node generateCards.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jacksonjw12/MatchIt.git"
+  },
+  "author": "Jackson Wheeler",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/jacksonjw12/MatchIt/issues"
+  },
+  "homepage": "https://github.com/jacksonjw12/MatchIt#readme"
+}

@@ -1,0 +1,126 @@
+<title>MatchIt</title>
+<script src="/jquery/jquery.js"></script>
+<script src="/socket.io/socket.io.js"></script><!--socket io client-->
+<script src="info.js" ></script>
+<script src="intro.js" ></script>
+<script src="index.js" ></script>
+<link rel="stylesheet" type="text/css" href="index.css">
+<div id="sidebars">
+    <div class="sidebar sidebarLeft" style="display:none;"></div>
+    <div class="sidebar sidebarRight" style="display:none;"></div>
+</div>
+<div id="info">
+</div>
+<div id="intro" class="fullSize" >
+
+	<h1> Welcome to Match It!</h1>
+	<div class="intro_newRoomButton" id="joinButton" onclick="intro_newGame()">New Game</div></br>
+	<div id="intro_enterRoomName" class="intro_enterRoomName" style="display:none;">
+        <div id="intro_enterRoomNameContainer" class="intro_enterRoomNameContainer">
+            <div id="intro_enterRoomNameBox">
+				<div>Room Name: <input class="bigTextInput" id="intro_createRoomName" type="text"></br></div>
+				<div class="intro_numPlayersSelect">
+					<div onclick="intro_numPlayersMinus()" id="intro_numPlayersMinus" class="intro_numPlayersMinus">-</div><input class="intro_numPlayers" id="intro_createRoomMaxPlayers" readonly=true type="text" value="2"  ><div onclick="intro_numPlayersPlus()" class="intro_numPlayersPlus unselectable">+</div>
+
+				</div>
+				<div class="intro_createButtonContainer"><div class="intro_createButton" onclick="intro_createRoom()">Create</div></div>
+
+				<div class="intro_backButtonContainer"><div class="intro_backButton" onclick="intro_back()">Back</div></div>
+
+            </div>
+        </div>
+        <div id="intro_enterRoomNameOpacity" class="intro_enterRoomNameOpacity"></div>
+
+
+	</div>
+
+	<div id="intro_rooms"></div>
+
+
+
+
+
+
+</div>
+
+<div id="menu" class="fullSize game" style="display:none" >
+	<div class="centerColumn">
+		<h1 id="roomTitle">Room: test</h1>
+		<button id="startGame" class="smallerIntroButton" onclick="startGame()">Start Game</button>
+
+		<h3>Players</h3>
+		<div id="menuPlayers" class="menu_playerList">
+
+		</div>
+	</div>
+
+</br>
+	<button id="leaveRoom" class="smallerIntroButton" onclick="javascript:leaveRoom()">Leave The Room</button>
+
+</div>
+<div id="game" class="fullSize game" style="display:none">
+	<h3 >Room: test</h3>
+	<div id="locationText" class="locationClass">
+		<a class="locationDisplayToggle" onclick="javascript:toggleLocationInfo()"><i id="locationToggleText">hide</i></a>
+		<div id="sensitiveInfo">
+			<h2 id="location"> Location: place</h2>
+			<h2 id="role"> Role : job </h2>
+		</div>
+	</div>
+	<h3>Players</h3>
+	<div class="ingameplayerListContainer" >
+	<ul id="ingamePlayers" class="ingame-player-list">
+		<li class="locationReference" onclick="strikeRef(this)">Coffee</li>
+		<li class="locationReference" onclick="strikeRef(this)">Tea</li>
+		<li class="locationReference" onclick="strikeRef(this)">Milk</li>
+	</ul>
+</br>
+
+</div>
+	</br>
+	<button id="endGame" class="smallerIntroButton" onclick="javascript:endGame()">End The Game</button>
+
+	<button id="leaveRoomig" class="smallerIntroButton" onclick="javascript:leaveRoom()">Leave The Room</button>
+</br>
+		<h3><u> Location List</u></h3>
+		<ul id="locationRefList" class="locationRefList">
+		<li class="locationReference" onclick="strikeRef(this)">airplane</li>
+		<li class="locationReference" onclick="strikeRef(this)">bank</li>
+		<li class="locationReference" onclick="strikeRef(this)">beach</li>
+		<li class="locationReference" onclick="strikeRef(this)">cathedral</li>
+		<li class="locationReference" onclick="strikeRef(this)">circus tent</li>
+		<li class="locationReference" onclick="strikeRef(this)">corporate party</li>
+		<li class="locationReference" onclick="strikeRef(this)">crusader army</li>
+		<li class="locationReference" onclick="strikeRef(this)">casino</li>
+		<li class="locationReference" onclick="strikeRef(this)">day spa</li>
+		<li class="locationReference" onclick="strikeRef(this)">embassy</li>
+		<li class="locationReference" onclick="strikeRef(this)">hospital</li>
+		<li class="locationReference" onclick="strikeRef(this)">hotel</li>
+		<li class="locationReference" onclick="strikeRef(this)">military base</li>
+		<li class="locationReference" onclick="strikeRef(this)">movie studio</li>
+
+
+	</ul>
+
+		<ul id="locationRefList2" class="locationRefList">
+		<li class="locationReference" onclick="strikeRef(this)">ocean liner</li>
+		<li class="locationReference" onclick="strikeRef(this)">passenger train</li>
+		<li class="locationReference" onclick="strikeRef(this)">pirate ship</li>
+		<li class="locationReference" onclick="strikeRef(this)">polar station</li>
+		<li class="locationReference" onclick="strikeRef(this)">police station</li>
+		<li class="locationReference" onclick="strikeRef(this)">restaurant</li>
+		<li class="locationReference" onclick="strikeRef(this)">school</li>
+		<li class="locationReference" onclick="strikeRef(this)">service station</li>
+		<li class="locationReference" onclick="strikeRef(this)">space station</li>
+		<li class="locationReference" onclick="strikeRef(this)">submarine</li>
+		<li class="locationReference" onclick="strikeRef(this)">supermarket</li>
+		<li class="locationReference" onclick="strikeRef(this)">theater</li>
+		<li class="locationReference" onclick="strikeRef(this)">university</li>
+		<li class="locationReference" onclick="strikeRef(this)">world war ii squad</li>
+
+
+
+
+
+
+</div>

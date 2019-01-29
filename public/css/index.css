@@ -1,0 +1,402 @@
+.fullSize {
+	width:100%;
+
+}
+.centerColumn {
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    width:100%;
+}
+.halfSize {
+	width:50%;
+}
+#info {
+    position:absolute;
+    top:0;
+    left:0;
+    height:100%;
+    width:40%;
+    display:flex;
+    flex-direction: column;
+    overflow-y:hidden;
+    padding: 10px 20px;
+    z-index:-1;
+}
+.info_panel {
+    z-index:100;
+    background-color:white;
+    min-width:20%;
+    max-width:40%;
+    min-height:4%;
+    padding:15px;
+    margin:10px;
+    margin-left:-500px;
+
+    border:1px solid black;
+}
+.info_panel_error {
+    border:1px solid #dc3545;
+}
+.info_panel_info {
+    border:1px solid #17a2b8;
+}
+.info_panel_success {
+    border: 1px solid #28a745;
+}
+#sidebars{
+    margin:0;
+    position:absolute;
+    top:0;
+    left:0;
+    width: 100%;
+    height: 100%;
+    z-index:-1;
+}
+.sidebar {
+    width:4%;
+    height:100%;
+
+
+}
+.sidebarLeft {
+    float: left;
+}
+.sidebarRight {
+    float: right;
+}
+
+#intro {
+	text-align:center;
+}
+#intro_enterRoomNameOpacity {
+    position:absolute;
+    top:0;
+    left:0;
+    width: 100%;
+    height: 100%;
+    opacity:.5;
+    background-color: white;
+    display:flex;
+    z-index:5;
+}
+#intro_enterRoomNameContainer {
+    display:flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    position:absolute;
+    z-index:10;
+    top:0;
+    width: 100%;
+    height: 100%;
+
+    opacity:1;
+
+}
+#intro_enterRoomNameBox {
+    z-index:15;
+    width: 50%;
+    height:50%;
+    display:flex;
+    flex-direction:column;
+    background-color:white;
+    -webkit-box-shadow: 1px 1px 5px 0px #a2958a;
+    -moz-box-shadow: 1px 1px 5px 0px #a2958a;
+    box-shadow: 1px 1px 5px 0px #a2958a;
+
+
+}
+.intro_newRoomButton {
+    display: inline-block;
+    cursor: pointer;
+    font-size: 20px;
+    /*padding: 10px 10px 10px 10px;*/
+    width:20%;
+    padding: 12px 20px;
+    background: #ffffff;
+    -webkit-box-shadow: 1px 1px 5px 0px #a2958a;
+    -moz-box-shadow: 1px 1px 5px 0px #a2958a;
+    box-shadow: 1px 1px 5px 0px #a2958a;
+
+}
+.intro_numPlayers {
+    width:10%;
+    padding: 12px 20px;
+    margin: 8px 0;
+    font-size: 20px;
+    box-sizing: border-box;
+}
+.intro_numPlayersSelect {
+    display:flex;
+    justify-content:center;
+}
+.intro_numPlayersMinus {
+    cursor: pointer;
+    width:10%;
+
+    padding: 12px 20px;
+    margin: 8px 0;
+    font-size: 20px;
+    box-sizing: border-box;
+    background: #ffffff;
+    -webkit-box-shadow: 1px 1px 5px 0px #a2958a;
+    -moz-box-shadow: 1px 1px 5px 0px #a2958a;
+    box-shadow: 1px 1px 5px 0px #a2958a;
+
+    -moz-user-select: -moz-none;
+    -khtml-user-select: none;
+    -webkit-user-select: none;
+    -o-user-select: none;
+    user-select: none;
+}
+.intro_numPlayersPlus {
+    cursor: pointer;
+    width:10%;
+
+    padding: 12px 20px;
+    margin: 8px 0;
+    font-size: 20px;
+    box-sizing: border-box;
+    background: #ffffff;
+    -webkit-box-shadow: 1px 1px 5px 0px #a2958a;
+    -moz-box-shadow: 1px 1px 5px 0px #a2958a;
+    box-shadow: 1px 1px 5px 0px #a2958a;
+
+    -moz-user-select: -moz-none;
+    -khtml-user-select: none;
+    -webkit-user-select: none;
+    -o-user-select: none;
+    user-select: none;
+}
+.intro_numPlayersPlus:active {
+    background: #a2958a;
+}
+.intro_numPlayersMinus:active {
+    background: #a2958a;
+}
+.intro_backButtonContainer {
+    padding-top:10px;
+    align-self:center;
+    width:20%;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+
+
+}
+.intro_createButtonContainer {
+
+
+    padding-top:10px;
+    align-self:center;
+    width:20%;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    -moz-user-select: -moz-none;
+    -khtml-user-select: none;
+    -webkit-user-select: none;
+    -o-user-select: none;
+    user-select: none;
+}
+.intro_createButton {
+    cursor: pointer;
+    padding: 6px 10px;
+    margin: 8px 0;
+    font-size: 20px;
+    box-sizing: border-box;
+    color: black;
+    background-color:white;
+    border: 1px solid #28a745;
+    -moz-user-select: -moz-none;
+    -khtml-user-select: none;
+    -webkit-user-select: none;
+    -o-user-select: none;
+    user-select: none;
+}
+.intro_backButton {
+    cursor: pointer;
+    padding: 6px 10px;
+    margin: 8px 0;
+    font-size: 20px;
+    box-sizing: border-box;
+    color: black;
+    background-color:white;
+    border: 1px solid #dc3545;
+}
+.intro_createButton:active {
+    opacity:.5;
+    background-color:#28a745;
+}
+.intro_backButton:active {
+    opacity:.5;
+    background-color:#dc3545;
+}
+
+.bigTextInput {
+	width: 50%;
+    padding: 12px 20px;
+    margin: 8px 0;
+    font-size: 20px;
+    box-sizing: border-box;
+}
+.medTextInput {
+	width: 40%;
+    padding: 12px 20px;
+    margin: 8px 0;
+    font-size: 20px;
+    box-sizing: border-box;
+}
+.roomTable {
+	margin-bottom:0px;
+	font-size: 20px;
+	width:30%;
+	display: inline-table;
+	text-align:center;
+	margin-left: auto;
+	margin-right: auto;
+}
+.smallerIntroButton {
+	font-size: 20px;
+	/*padding: 10px 10px 10px 10px;*/
+	width:20%;
+	padding: 12px 20px;
+	background: #ffffff;
+	border: 1px solid rgb(216,216,216)
+}
+
+.connectButton {
+	font-size: 16px;
+	padding: 5px 10px 5px 10px;
+	background: #ffffff;
+	background-image: -webkit-linear-gradient(top, #ffffff, #ffffff);
+	background-image: -moz-linear-gradient(top, #ffffff, #ffffff);
+	background-image: -ms-linear-gradient(top, #ffffff, #ffffff);
+	background-image: -o-linear-gradient(top, #ffffff, #ffffff);
+	background-image: linear-gradient(to bottom, #ffffff, #ffffff);
+}
+.introButton {
+	font-size: 40px;
+	padding: 10px 10px 10px 10px;
+	width:50%;
+	background: #ffffff;
+	background-image: -webkit-linear-gradient(top, #ffffff, #ffffff);
+	background-image: -moz-linear-gradient(top, #ffffff, #ffffff);
+	background-image: -ms-linear-gradient(top, #ffffff, #ffffff);
+	background-image: -o-linear-gradient(top, #ffffff, #ffffff);
+	background-image: linear-gradient(to bottom, #ffffff, #ffffff);
+}
+
+.menu_playerItemContainer {
+    display:flex;
+
+    flex-grow:1;
+    width:100%;
+    font-size:20px;
+    border-bottom: 1px solid;
+    border-left: 1px solid;
+    padding:10px;
+    margin-bottom:10px;
+}
+.menu_icon {
+    display:flex;
+    margin-top:-3px;
+
+    margin-right:10px;
+}
+.menu_playerItemNumber {
+    margin-right:10px;
+}
+
+.menu_playerName {
+    color:black;
+}
+
+.menu_playerList {
+    display:flex;
+    flex-direction:column;
+	width:32%;
+    align-items:center;
+    border-top: 1px solid #cccccc;
+    /*padding-top:10px;*/
+    padding:10px;
+
+}
+
+button {
+	cursor: pointer;
+}
+.player-name {
+    background-color: #f9f9f9;
+    padding: 3px 10px;
+}
+.player-name-strikeRefd {
+    background-color: #f9f9f9;
+    padding: 3px 10px;
+    color: #bbb;
+    text-decoration: line-through;
+}
+.game {
+	text-align:center;
+}
+.locationClass {
+	border:1px solid black;
+	width:30%;
+	display:inline-block
+}
+.locationDisplayToggle {
+	float:right;
+	cursor: pointer;
+}
+.ingameplayerListContainer {
+	display:inline-block;
+	 width:40%
+}
+.firstPlayer {
+	float:right;
+	font-size:15;
+	color:red;
+}
+.locationRefList {
+	display:inline-block;
+	text-align: left;
+	 vertical-align: top;
+    -moz-box-sizing:border-box;
+    -webkit-box-sizing:border-box;
+    box-sizing:border-box;
+    width: 15%;
+
+    list-style-type: none;
+    padding: 0 20px 0 0;
+    /*margin:;*/
+    margin: 0 0 14px 0;
+    cursor: pointer;
+    font-size: 20px;
+
+
+
+
+}
+#locationRefList{
+	text-align:right;
+}
+.locationReference {
+	  line-height:1.5em;
+  border:1px solid #ccc;
+  padding: 1px 5px 1px 5px;
+  /*float:left;*/
+  /*display:inline;*/
+
+}
+.locationReference-striked {
+
+    text-decoration: line-through;
+    background-color: #f9f9f9;
+
+    color: #bbb;
+
+}
+
+
+
