@@ -14,7 +14,10 @@ let matchIt = require('./cards.json');
 
 
 function isEmptyObject(obj) {
-  return !Object.keys(obj).length;
+	if(obj === undefined){
+		return false;
+	}
+  	return !Object.keys(obj).length;
 }
 
 function sendRooms(socket){
@@ -23,6 +26,21 @@ function sendRooms(socket){
 		roomsList.push(rooms[i].getSafe())
 	}
 	socket.emit('listRooms', {"rooms":roomsList})
+}
+function validName(str){
+	if(str.length > 0 && str.length < 16){
+		return str;
+	}
+}
+function escape(s) {
+    return s.replace(/[&"<>]/g, function (c) {
+        return {
+            '&': "&amp;",
+            '"': "&quot;",
+            '<': "&lt;",
+            '>': "&gt;"
+        }[c];
+    });
 }
 function initializeSockets(io){
 
@@ -51,6 +69,23 @@ function initializeSockets(io){
 				}
 			}
 		});
+		socket.on('changeName',function(data){
+			let player = connectedPlayers.get(socket.handshake.session.player);
+			let name = escape(data.name.trim())
+
+			if(player !== undefined){
+				if(validName(name)){
+					player.changeName(name,socket,io)
+				}
+				else{
+					socket.emit('roomError',{"type":"error", "value":"Invalid Name"})
+
+				}
+            }
+            else{
+            	socket.emit('roomError',{"type":"error", "value":"You are not logged in yet"})
+			}
+		})
 
 		socket.on('requestRooms', function (data){
 			let rooms = {}
@@ -66,28 +101,18 @@ function initializeSockets(io){
 			socket.emit('receiveInfo',{"id":plr.id})
 
 		});
-		socket.on('updateName',function(data){
 
-			for(let p = 0; p<connectedPlayers.length; p++){
-				if(connectedPlayers[p].socket === socket){
-					connectedPlayers[p].name = data.name;
-					if(connectedPlayers[p].room !== ""){
-						let world = getWorld(connectedPlayers[p].room);
-						for(let plr = 0; plr<world.players.length; plr++){
-							if(plr.id === connectedPlayers[p].id){
-								connectedPlayers[p].ign = data.name;
-							}
-						}
-					}
-					return;
-				}
-			}
-		});
 		socket.on('leaveRoom',function(data){
 			console.log(connectedPlayers.length)
 			let player = connectedPlayers.get(socket.handshake.session.player);
-			player.leaveRoom(io,socket)
-			sendRooms(io)
+			if(player !== undefined){
+				player.leaveRoom(io,socket)
+				sendRooms(io)
+			}
+			else{
+				console.log("player unable to leave room, is not found",socket.handshake.session.player)
+			}
+
 
 
 		})
@@ -120,9 +145,9 @@ function initializeSockets(io){
 			let player = connectedPlayers.get(socket.handshake.session.player);
 
 			if(player !== undefined){
-				if(player.room !== ""){
-					let room = Room.get(player.room)
-					if( !isEmptyObject(room) ){
+				if(!isEmptyObject(player.room)){
+					let room = Room.get(player.room.id)
+					if( room !== undefined ){
 						socket.emit('roomError',{"type":"error", "value":"You are still connected to a different room."})
 					}
 				}
@@ -143,40 +168,40 @@ function initializeSockets(io){
 			//user has gone through login process
 			let player = connectedPlayers.get(socket.handshake.session.player);
 			if(player !== undefined){
-				if(typeof player.room !== "string"){
-					if(player.room.id !== data.room){
-						socket.emit('roomError',{"type":"error", "value":"You are still connected to a different room."})
+				let room = Room.get(data.room)
+				if(room !== undefined){
+					if(!isEmptyObject(player.room)){
+						console.log(player.room.id,room.id)
+						if(player.room.id === room.id){
+							//player is still connected to this room
+							player.sync(socket,io)
+						}
+						else{
+							socket.emit('roomError',{"type":"error", "value":"You are still connected to a different room."})
+
+						}
 					}
 					else{
-						player.sync(socket,io)
+						if( room.players.length < room.maxPlayers ){
+							//emit to the player, not the socket, could have multiple devices
+							player.joinRoom(room,io,socket);
+							room.emit('info', player.name + " has connected",player);
+							sendRooms(io)
+
+						}
+						else{
+							socket.emit('roomError', {"type":"error","value":"That room is full"})
+						}
 					}
 				}
 				else{
-					if(player.room !== ""){
-						let room = Room.get(player.room)
-						if( !isEmptyObject(room) ){
-							socket.emit('roomError',{"type":"error", "value":"You are still connected to a different room."})
-						}
-					}
-					else{
-						let room = Room.get(data.room)
-						if( room === undefined ){
-							socket.emit('roomError', {"type":"error","value":"That room doesn't exist"})
-						}
-						else{
-							if( room.players.length < room.maxPlayers ){
-								//emit to the player, not the socket, could have multiple devices
-								player.joinRoom(room,io,socket)
-								room.emit('roomUpdate', {"message":player.name + " has connected", "room":room.getSafe()},io);
-								sendRooms(io)
+					console.log(data)
+					socket.emit('roomError', {"type":"error","value":"That room doesn't exist"})
 
-							}
-							else{
-								socket.emit('roomError', {"type":"error","value":"That room is full"})
-							}
-						}
-					}
 				}
+
+
+
 			}
 			else{
 				socket.emit('roomError',{"type":"error", "value":"You are not logged in yet"})

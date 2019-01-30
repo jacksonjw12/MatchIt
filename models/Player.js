@@ -6,7 +6,7 @@ class Player{
 		this.id = makePlayerId();
 		this.name = this.id;
 		this.socketGroup = "group_" + this.id;
-		this.room = "";
+		this.room = {};
 		this.connected = false;
 
 
@@ -14,29 +14,62 @@ class Player{
 
 	}
 	sync(socket,io){
-		this.update(socket);
+	    if(socket !== undefined && io !== undefined){
+	        this.update(socket);//set cookie to this
 
-		socket.emit('roomConnection', {"id":this.id,"room":this.room.getSafe()})
+            io.to(this.socketGroup).emit('playerUpdate', this.getSafe())//update
+        }
+        else{
+            console.log("sync failed, Player.sync")
+            console.log("socket",socket)
+            console.log("io",io)
+        }
+
+
 	}
+	syncNoCookie(io){//like sync
+	    if(io !== undefined){
+
+            io.to(this.socketGroup).emit('playerUpdate', this.getSafe())//update
+        }
+        else{
+            console.log("syncNoCookie failed, Player.syncNoCookie")
+            console.log("io",io)
+        }
+    }
+	changeName(name,socket,io){
+	    let oldName = this.name
+	    this.name = name;
+	    this.sync(socket,io)
+        io.to(this.socketGroup).emit('nameChanged',{"name":this.name})
+        if(!isEmptyObject(this.room)){
+            this.room.emit("info",oldName + " has changed their name to " + this.name,this);
+
+        }
+
+
+    }
 	update(socket){
 		socket.join(this.socketGroup);
 		socket.handshake.session.player =this.getSafe();// {"id":this.id,"socketGroup":this.socketGroup,"room":this.room};
 		socket.handshake.session.save();
 	}
-	getSafe(){
+	getSafe(depth){
+        if(depth === undefined){
+            depth = 0;
+        }
 		let safePlayer = {};
 		safePlayer.id = this.id
 		safePlayer.name = this.name
 		safePlayer.socketGroup = this.socketGroup;
 		safePlayer.connectedDevices = this.connectedDevices;
 		safePlayer.connected = this.connected;
-		if(this.room === ""){
-			safePlayer.room = ""
+		if(isEmptyObject(this.room) || depth >= 2){
+			safePlayer.room = {}
 		}
-		else{
-			safePlayer.room = this.room.id
+		else if(depth < 2){
+			safePlayer.room = this.room.getSafe(depth+1)
 		}
-
 
 		return safePlayer;
 	}
@@ -46,7 +79,7 @@ class Player{
 		if(this.connectedDevices === 0){
 		    clearTimeout(this.timeToRemoval);
             clearTimeout(this.timeToKick);
-
+            //console.log(this)
 			if(this.room.id && !this.connected){
 			    this.connected = true;
 			    this.room.connect(this);
@@ -69,18 +102,18 @@ class Player{
 	}
 	joinRoom(room,io,socket){
 		this.room = room;
-		this.update(socket);
+		//this.update(socket);
 
 		room.join(this);
-
-		io.to(this.socketGroup).emit('roomConnection', {"id":this.id,"room":room.getSafe()})
+        this.sync(socket,io);
+		io.to(this.socketGroup).emit('roomConnection', {})
 
 	}
 	leaveRoom(io,socket){
-		if(typeof this.room !== "string"){
+		if(!isEmptyObject(this.room)){
 			this.room.leave(this,io);
-			this.room = "";
-			this.update(socket);
+			this.room = {};
+			this.sync(socket,io);
 			io.to(this.socketGroup).emit('roomLeft', {})
 		}
 
@@ -89,7 +122,9 @@ class Player{
 	}
 	static disconnect(player){
 	    player.connected = false;
-	    player.room.disconnect(player)
+	    if(player.room.id){
+	        player.room.disconnect(player)
+        }
 
     }
 
@@ -161,6 +196,9 @@ connectedPlayers.get = function(player){
 	}
 }
 
+function isEmptyObject(obj) {
+  return !Object.keys(obj).length;
+}
 exports.Player = Player
 exports.connectedPlayers = connectedPlayers;
 

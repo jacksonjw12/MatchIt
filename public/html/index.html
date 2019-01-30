@@ -1,24 +1,38 @@
-<title>MatchIt</title>
-<script src="/jquery/jquery.js"></script>
-<script src="/socket.io/socket.io.js"></script><!--socket io client-->
-<script src="info.js" ></script>
-<script src="intro.js" ></script>
-<script src="index.js" ></script>
-<link rel="stylesheet" type="text/css" href="index.css">
+<html>
+<head>
+	<title>MatchIt</title>
+	<script src="/jquery/jquery.js"></script>
+	<script src="/socket.io/socket.io.js"></script><!--socket io client-->
+	<script src="info.js" ></script>
+	<script src="intro.js" ></script>
+	<script src="index.js" ></script>
+	<link rel="stylesheet" type="text/css" href="index.css">
+</head>
+
 <div id="sidebars">
     <div class="sidebar sidebarLeft" style="display:none;"></div>
     <div class="sidebar sidebarRight" style="display:none;"></div>
+
 </div>
+<div id="sidebarsRoom">
+	<div class="sidebarRoom sidebarRoomLeft" style="display:none;"></div>
+	<div class="sidebarRoom sidebarRoomRight" style="display:none;"></div>
+</div>
+
 <div id="info">
 </div>
+<body>
+
 <div id="intro" class="fullSize" >
 
 	<h1> Welcome to Match It!</h1>
 	<div class="intro_newRoomButton" id="joinButton" onclick="intro_newGame()">New Game</div></br>
 	<div id="intro_enterRoomName" class="intro_enterRoomName" style="display:none;">
-        <div id="intro_enterRoomNameContainer" class="intro_enterRoomNameContainer">
-            <div id="intro_enterRoomNameBox">
-				<div>Room Name: <input class="bigTextInput" id="intro_createRoomName" type="text"></br></div>
+        <div id="intro_enterRoomNameContainer" class="overlay_container">
+            <div class="overlay_box">
+				<div class="overlay_label">Room Name:</div>
+				<div> <input class="bigTextInput" id="intro_createRoomName" type="text"></br></div>
+				<div class="overlay_label">Max Players:</div>
 				<div class="intro_numPlayersSelect">
 					<div onclick="intro_numPlayersMinus()" id="intro_numPlayersMinus" class="intro_numPlayersMinus">-</div><input class="intro_numPlayers" id="intro_createRoomMaxPlayers" readonly=true type="text" value="2"  ><div onclick="intro_numPlayersPlus()" class="intro_numPlayersPlus unselectable">+</div>
 
@@ -29,7 +43,7 @@
 
             </div>
         </div>
-        <div id="intro_enterRoomNameOpacity" class="intro_enterRoomNameOpacity"></div>
+        <div id="intro_enterRoomNameOpacity" class="overlay_opacity"></div>
 
 
 	</div>
@@ -82,41 +96,7 @@
 
 	<button id="leaveRoomig" class="smallerIntroButton" onclick="javascript:leaveRoom()">Leave The Room</button>
 </br>
-		<h3><u> Location List</u></h3>
-		<ul id="locationRefList" class="locationRefList">
-		<li class="locationReference" onclick="strikeRef(this)">airplane</li>
-		<li class="locationReference" onclick="strikeRef(this)">bank</li>
-		<li class="locationReference" onclick="strikeRef(this)">beach</li>
-		<li class="locationReference" onclick="strikeRef(this)">cathedral</li>
-		<li class="locationReference" onclick="strikeRef(this)">circus tent</li>
-		<li class="locationReference" onclick="strikeRef(this)">corporate party</li>
-		<li class="locationReference" onclick="strikeRef(this)">crusader army</li>
-		<li class="locationReference" onclick="strikeRef(this)">casino</li>
-		<li class="locationReference" onclick="strikeRef(this)">day spa</li>
-		<li class="locationReference" onclick="strikeRef(this)">embassy</li>
-		<li class="locationReference" onclick="strikeRef(this)">hospital</li>
-		<li class="locationReference" onclick="strikeRef(this)">hotel</li>
-		<li class="locationReference" onclick="strikeRef(this)">military base</li>
-		<li class="locationReference" onclick="strikeRef(this)">movie studio</li>
 
-
-	</ul>
-
-		<ul id="locationRefList2" class="locationRefList">
-		<li class="locationReference" onclick="strikeRef(this)">ocean liner</li>
-		<li class="locationReference" onclick="strikeRef(this)">passenger train</li>
-		<li class="locationReference" onclick="strikeRef(this)">pirate ship</li>
-		<li class="locationReference" onclick="strikeRef(this)">polar station</li>
-		<li class="locationReference" onclick="strikeRef(this)">police station</li>
-		<li class="locationReference" onclick="strikeRef(this)">restaurant</li>
-		<li class="locationReference" onclick="strikeRef(this)">school</li>
-		<li class="locationReference" onclick="strikeRef(this)">service station</li>
-		<li class="locationReference" onclick="strikeRef(this)">space station</li>
-		<li class="locationReference" onclick="strikeRef(this)">submarine</li>
-		<li class="locationReference" onclick="strikeRef(this)">supermarket</li>
-		<li class="locationReference" onclick="strikeRef(this)">theater</li>
-		<li class="locationReference" onclick="strikeRef(this)">university</li>
-		<li class="locationReference" onclick="strikeRef(this)">world war ii squad</li>
 
 
 
@@ -124,3 +104,31 @@
 
 
 </div>
+<div id="userSettings" style="display:none;">
+	<div class="userSettings_displayName"><a id="userSettings_name"></a></div>
+
+	<div class="userSettings_changeDisplayName" onclick="changeName_show()">🖋️ Change User Name</div>
+</div>
+<div id="changeName" style="height:0px;" >
+	<div id="changeName_visible" class="intro_enterRoomName" style="display:none;">
+        <div id="changeName_container" class="overlay_container">
+            <div class="overlay_box">
+				<div class="overlay_textBoxContainer"><h2>Change User Name</h2></div>
+				<div class="overlay_textBoxContainer"><div class="overlay_label" style="width:80%;" >Name:</div></div>
+
+				<div class="overlay_textBoxContainer"><input class="bigTextInput" id="changeName_name" type="text"></br></div>
+
+				<div class="intro_createButtonContainer"><div class="intro_createButton" onclick="changeName_changeName()">Change</div></div>
+
+				<div class="intro_backButtonContainer"><div class="intro_backButton" onclick="changeName_hide()">Back</div></div>
+
+            </div>
+        </div>
+        <div class="overlay_opacity"></div>
+
+
+	</div>
+
+</div>
+</body>
+</html>

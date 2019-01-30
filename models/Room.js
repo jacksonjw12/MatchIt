@@ -32,13 +32,13 @@ class Room{
 	}
 	disconnect(player){
         console.log("player: " + player.id + " disconnected from room: " + this.id);
-        this.emit('roomUpdate', {"message":player.name + " has disconnected", "room":this.getSafe()},this.io);
+        this.emit('info', player.name + " has disconnected",player);
 
 
     }
     connect(player){
         console.log("player: " + player.id + " reconnected to room: " + this.id);
-        this.emit('roomUpdate', {"message":player.name + " has reconnected", "room":this.getSafe()},this.io);
+        this.emit('info', player.name + " has reconnected",player);
 
     }
 	leave(player){//leave for good
@@ -54,11 +54,11 @@ class Room{
 				this.players.splice(p,1);
 				if(this.admin.id === player.id){
 					this.admin = this.players[0]
-					this.emit('roomUpdate', {"message":player.name + " has left, new admin is " + this.admin.name, "room":this.getSafe()},this.io);
+					this.emit('info',player.name + " has left the room, new admin is " + this.admin.name);
 
 				}
 				else{
-					this.emit('roomUpdate', {"message":player.name + " has left", "room":this.getSafe()},this.io);
+					this.emit('info', player.name + " has left the room");
 
 				}
 
@@ -70,18 +70,35 @@ class Room{
 		this.players.push(player)
 
 	}
-	emit(type,message){
-		for(let p = 0; p< this.players.length; p++){
-			this.io.to(this.players[p].socketGroup).emit(type,message)
+	emit(type,message,from){
+	    if(this.io !== undefined){
+	        for(let p = 0; p< this.players.length; p++){
+                this.players[p].syncNoCookie(this.io);
+                if(from !== undefined){
+                    if(from.id !== this.players[p].id){
+                        this.io.to(this.players[p].socketGroup).emit('roomError',{'type':type,'value':message})
+                    }
+                }
+                else{
 
-		}
+                    this.io.to(this.players[p].socketGroup).emit('roomError',{'type':type,'value':message})
+                }
 
+
+            }
+        }
+        else{
+            console.log("emit failed, io is undefined, Room.emit")
+        }
 
 	}
 
-	getSafe(){
+	getSafe(depth){
+	    if(depth === undefined){
+            depth = 1;
+        }
 		let safeRoom = {};
-		safeRoom.admin = this.admin.getSafe();
+		safeRoom.admin = this.admin.getSafe(depth+1);
 		safeRoom.players = [];
 		safeRoom.stage = this.stage;
 		safeRoom.socketGroup = this.socketGroup;
@@ -90,7 +107,7 @@ class Room{
         safeRoom.id = this.id;
 
 		for(let p = 0; p< this.players.length; p++){
-			safeRoom.players.push(this.players[p].getSafe())
+			safeRoom.players.push(this.players[p].getSafe(depth+1))
 		}
 		return safeRoom
 

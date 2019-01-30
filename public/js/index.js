@@ -1,8 +1,12 @@
 let socket;
 let player = {}
 
-let room = ""
+let room = {}
+let lastState = "lobby"
 
+function isEmptyObject(obj) {
+  return !Object.keys(obj).length;
+}
 
 function toggleLocationInfo(){
 	if(document.getElementById("locationToggleText").innerHTML == "hide"){
@@ -45,21 +49,47 @@ function strikeRef(e){
 
 	}
 }
+function displayRooms(rooms){
+	let roomString = ""
+	for(let r in rooms){
+		let room = rooms[r]
+		let numPlayers = room.players
+		if(typeof numPlayers === 'object'){
+			numPlayers = numPlayers.length;
+		}
+		roomString += "<tr><td>" + room.name + "</td><td>" + numPlayers + '/' + room.maxPlayers + '</td><td><button class="connectButton" style="border: 1px solid #' + room.id + ';" onclick="connectRoom('+"'"+ room.id +"'"+')">Connect</button></td></tr>'
 
+	}
+	roomString += "<tr style='opacity:0;'><td>testMaximumLength</td><td>2/2</td><td><button class='connectButton'>Connect</button></td></tr>"
+
+
+	let table = "<h2 class='currentRooms'>Current Rooms</h2>" +
+		"<div class='roomTableContainer'>" +
+		"<div class='roomTableHeaderContainer'><div class='roomTableHeader'>Name</div><div class='roomTableHeader'># Players</div><div class='roomTableHeader'></div></div>" +
+		"<div class='roomTableScrollable'>" +
+		"<table class='roomTable' style='text-align:center;'>" +
+		 roomString +
+
+		"</table>" +
+		"</div>" +
+		"</div>";
+
+
+	document.getElementById('intro_rooms').innerHTML = table
+}
 function getRooms(){
 	var xmlHttp = new XMLHttpRequest();
 	xmlHttp.onreadystatechange = function() {
 		if(xmlHttp.readyState == 4 && xmlHttp.status == 200){
 			rooms = JSON.parse(xmlHttp.responseText).roomList;
-			console.log(rooms)
-			let string = "<h2 >Current Rooms</h2><table class='roomTable' style='text-align:center;'><tr><th>Name</th><th># Players</th><th></th></tr>"
-			for(let r in rooms){
-				let room = rooms[r]
-				string += "<tr><td>" + room.name + "</td><td>" + room.players + '/' + room.maxPlayers + '</td><td><button class="connectButton" onclick="connectRoom('+"'"+ room.id +"'"+')">Connect</button</td</tr>'
-
+			/*rooms = [{"name":"testing 123","players":1,"maxPlayers":2,"id":makeId()}]
+			for(let i = 0; i < 10; i++){
+				rooms.push(JSON.parse(JSON.stringify(rooms[0])))
+				rooms[i+1].id = makeId()
 			}
+			*/
+			displayRooms(rooms)
 
-			document.getElementById('intro_rooms').innerHTML = string
 		}
 
 		}
@@ -137,39 +167,39 @@ function getMyRoles(world){
 // 	// 	}
 // 	// }
 // }
-function setUpRoom(data){
-	console.log(data)
-	if(data.room.stage === "menu"){
+function render(){
+	if(player.room.id === undefined){
+		hideRoomSidebars()
+		document.getElementById("intro").style.display = 'block';
+		document.getElementById("menu").style.display = 'none';
+		document.getElementById("game").style.display = 'none';
+
+	}
+	else if(player.room.stage === "menu"){
+		showRoomSidebars()
 		document.getElementById("intro").style.display = 'none';
 		document.getElementById("menu").style.display = 'block';
 		document.getElementById("game").style.display = 'none';
 
 		document.getElementById("menuPlayers").innerHTML = '';
 
-		document.getElementById("roomTitle").innerHTML = "Room: "+data.room.name
-		for(let p = 0; p < data.room.players.length; p++){
-			console.log(data.room)
-			document.getElementById("menuPlayers").innerHTML+=getMenuPlayerItem(data.room.players[p],p+1,data.room.admin.id)
+		document.getElementById("roomTitle").innerHTML = "Room: "+player.room.name
+		for(let p = 0; p < player.room.players.length; p++){
+			document.getElementById("menuPlayers").innerHTML+=getMenuPlayerItem(player.room.players[p],p+1,player.room.admin.id)
 		}
 
 	}
-	if(data.room.stage == "game"){
+	else if(data.room.stage === "game"){
+		showRoomSidebars()
 		document.getElementById("intro").style.display = 'none';
 		document.getElementById("menu").style.display = 'none';
 		document.getElementById("game").style.display = 'block';
 		document.getElementById("ingamePlayers").innerHTML = '';
-		getMyRoles(data.room);
-		document.getElementById("location").innerHTML = player.location
-		document.getElementById("role").innerHTML = player.role
-		if(player.location === undefined){
-			// getMyRolesByName(data.world)
-			player.location = "spectator"
-			player.role = ""
-		}
 
-		for(var p = 0; p < data.room.players.length; p++){
+
+		for(let p = 0; p < player.room.players.length; p++){
 			//console.log(document.getElementById("menuPlayers").innerHTML);
-			document.getElementById("ingamePlayers").innerHTML+=getIGPlayerItem(data.room.players[p],data.room.first)
+			document.getElementById("ingamePlayers").innerHTML+=getIGPlayerItem(player.room.players[p],player.room.first)
 		}
 
 	}
@@ -204,10 +234,27 @@ function initializeSidebars(){
 	$('.sidebarRight').css('background-color', "#" + player.id);
 	$('.sidebarLeft').animate({width:'toggle'},350);
 	$('.sidebarRight').animate({width:'toggle'},350);
+
+
+
 	//$('.sidebarLeft').slideDown();
 	//$('.sidebarRight').slideDown();
 
 }
+function showRoomSidebars(){
+	if(player.room.id !== undefined){
+		$('.sidebarRoom').css('background-color', "#" + player.room.id);
+		$('.sidebarRoom').css('background-color', "#" + player.room.id);
+	}
+	$('.sidebarRoom').animate({width:'show'},350);
+	$('.sidebarRoom').animate({width:'show'},350);
+}
+function hideRoomSidebars(){
+
+	$('.sidebarRoom').animate({width:'hide'},350);
+	$('.sidebarRoom').animate({width:'hide'},350);
+}
+
 
 
 function connect(){
@@ -273,56 +320,94 @@ function leaveRoom(){
 	socket.emit('leaveRoom',{})
 
 }
+function validName(str){
+	if(str.length > 0 && str.length < 16){
+		return str;
+	}
+}
+
+function changeName_changeName(){
+	let name = $('#changeName_name').val().trim();
+	if(validName(name)){
+		socket.emit('changeName',{'name':name})
+	}
+	else{
+		info({"type":"error","value":"invalid name, must be between 1-15 characters"})
+	}
+
+}
+function setup(){
+	$('#userSettings').show();
+
+}
+
 
 function main(){
 	socket = io();
 
 	socket.emit('login')
-	socket.on('receiveInfo',function(data){
-		console.log(data)
-		player.id = data.id
-		initializeSidebars()
 
-
-	})
 
 	socket.on('listRooms',function(data){
 		console.log(data)
-		let string = "<h2 >Current Rooms</h2><table class='roomTable' style='text-align:center;'><tr><th>Name</th><th># Players</th><th></th></tr>"
-			for(let r in data.rooms){
-				let room = data.rooms[r];
-				string += "<tr><td>" + room.name + "</td><td>" + room.players.length + '/' + room.maxPlayers + '</td><td><button class="connectButton" onclick="connectRoom('+"'"+ room.id +"'"+')">Connect</button</td</tr>'
-
-			}
-
-			document.getElementById('intro_rooms').innerHTML = string
+		displayRooms(data.rooms)
+		// let string = "<h2 class='currentRooms'>Current Rooms</h2><div class='roomTableContainer'><table class='roomTable' style='text-align:center;'><tr><th>Name</th><th># Players</th><th></th></tr>"
+		// 	for(let r in data.rooms){
+		// 		let room = data.rooms[r];
+		// 		string += "<tr><td>" + room.name + "</td><td>" + room.players.length + '/' + room.maxPlayers + '</td><td><button class="connectButton" onclick="connectRoom('+"'"+ room.id +"'"+')">Connect</button</td</tr>'
+		//
+		// 	}
+		// 	string += "</table></div>"
+		//
+		// 	document.getElementById('intro_rooms').innerHTML = string
 	});
 
 	socket.on("logged_in", function(data) {
 		console.info("logged_in event received. Check the console");
 		console.info("sessiondata after logged_in event is ", data);
+
 		player = data.player;
 
 		initializeSidebars()
+		setup()
+
+
+		render()
+
+		$('#userSettings_name').text(player.name);
+
 		console.log(player.room)
-		if(player.room !== ""){
-			socket.emit('joinRoom',{"room":player.room})
-		}
+		// if(!isEmptyObject(player.room)){
+		// 	socket.emit('joinRoom',{"room":player.room})
+		// }
     })
+
+	socket.on("nameChanged",function(data){
+		info({"type":"success","value":"Name changed to " + data.name})
+
+		$('#userSettings_name').text(data.name);
+		changeName_hide();
+	})
 
 
 	socket.on('roomConnection', function(data){//contains room and our new id
-		setUpRoom(data)
-		console.log("here we go")
+
+
+		info({"type":"info","value":"Joined Room"})
 	});
+
+	socket.on('playerUpdate',function (data){
+		player = data;
+		console.log("player update",player)
+		render()
+	})
+
 	socket.on('roomError',function(data){
-		console.log("ERROR")
 		console.log(data)
 		info(data)
 	})
 	socket.on('roomUpdate', function (data) {//contains room
 		console.log("room was updated")
-		setUpRoom(data)
 
 	});
 	socket.on('roomLeft',function(data){

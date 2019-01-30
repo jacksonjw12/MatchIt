@@ -1,4 +1,5 @@
 function info(msg){
+    console.log("MESSAGE",msg)
     let panel;
     if(msg.type === "error"){
         panel = '<div class="info_panel info_panel_error">' + msg.value + '</div>'

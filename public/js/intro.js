@@ -1,11 +1,25 @@
 function intro_newGame(){
 	$( "#intro_enterRoomName" ).show(400);
 
-
 }
 function intro_back(){
 	$( "#intro_enterRoomName" ).hide(400);
+	$('#intro_createRoomName').val("");
+
 }
+
+
+function changeName_show(){
+	$('#changeName_name').attr("placeholder", player.name);
+	$('#changeName_visible').show(400)
+	$('#changeName_name').focus()
+}
+function changeName_hide(){
+	$('#changeName_visible').hide(400)
+	$('#changeName_name').val("")
+}
+
+
 function intro_numPlayersPlus(){
 	let maxPlayers = parseInt($('#intro_createRoomMaxPlayers').val());
 	if(maxPlayers < 4){
