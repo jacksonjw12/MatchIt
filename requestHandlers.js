@@ -1,16 +1,5 @@
-let playerFile = require('./models/Player.js');
-let Player = playerFile.Player;
-let connectedPlayers = playerFile.connectedPlayers;
-let roomFile = require('./models/Room.js')
-let Room = roomFile.Room
-let rooms = roomFile.rooms;
-
-let matchIt = require('./cards.json');
-//var locations = {    {"room1":[ {"name":"AAAABB","x":100,"y":100}, {"name":"BABCDC","x":200,"y":100}]}    }
-
-//playerexample = {"Socket":socket, "Location":{"x":42,"y",24}, "Rotation":90, "IGN":"Richard Wang", GameRoom:bestgame}
-//gameroom example = {"name":abcd, }
-
+let {Player, connectedPlayers} = require('./models/Player.js');
+let {Room, rooms} = require('./models/Room.js')
 
 
 function isEmptyObject(obj) {
@@ -45,7 +34,7 @@ function escape(s) {
 function initializeSockets(io){
 
 	io.on('connection', function (socket) {
-
+		
 		socket.on("login", function(userdata) {
 			if(socket.handshake.session.player === undefined || connectedPlayers.getIndexOf(socket.handshake.session.player) < 0){
 				console.log("new player")//or was disconnected too long
@@ -123,15 +112,23 @@ function initializeSockets(io){
 		});
 
 		socket.on('startGame',function(data){
-			let roomName = player.room
-			let world = getWorld(roomName)
-
-			generateGame(world)
-			io.to(roomName).emit('roomUpdate', {"message":"game has started", "world":getSafeWorld(world)})
+			console.log("startGame: ", data);
+			let player = connectedPlayers.get(socket.handshake.session.player);
+			let room = player.room;
+			if(isEmptyObject(player.room)){
+				socket.emit('roomError',{"type":"error", "value":"You are not in a room."})
+				return;
+			}
+			if(!room.meetsGameStartConditions()){
+				socket.emit('roomError',{"type":"error", "value":"Game may not be started, conditions are unmet."})
+				return;
+			}
+			room.startNewGame();
+			// io.to(roomName).emit('roomUpdate', {"message":"game has started", "world":getSafeWorld(world)})
 
 		});
 		socket.on('endGame',function(data){
-			player = getPlayer(socket)
+			let player = connectedPlayers.get(socket.handshake.session.player);
 			roomName = player.room
 
 			world = getWorld(roomName)
@@ -178,7 +175,6 @@ function initializeSockets(io){
 						}
 						else{
 							socket.emit('roomError',{"type":"error", "value":"You are still connected to a different room."})
-
 						}
 					}
 					else{

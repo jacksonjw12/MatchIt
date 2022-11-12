@@ -1,5 +1,5 @@
-var fs = require('fs');
 var emoji = require('node-emoji')
+
 function generateCards(){
     let cards = [];
     let prime=7;
@@ -33,26 +33,21 @@ function generateCards(){
 
     //console.log(cards);
 
-
-    createSymbols(cards)
+    return cards;
 }
 function createSymbols(cards){
-
-    let matchIt = {}
-    matchIt.cards = cards;
-    matchIt.symbols = []
+    let symbols = []
     for(let i = 0; i< cards.length; i++){
         let attemptedSymbol = emoji.random();
-        while(attemptedSymbol in matchIt.symbols){
+        while(attemptedSymbol in symbols){
             attemptedSymbol = emoji.random();
         }
-        matchIt.symbols.push(attemptedSymbol)
+        symbols.push(attemptedSymbol)
     }
-    matchIt = JSON.stringify(matchIt);
-    fs.writeFile('cards.json', matchIt, 'utf8', saved);
-}
-function saved(){
-    console.log("Done!")
+    return symbols;
 }
 
-generateCards();
+module.exports = {
+    generateCards,
+    createSymbols
+}

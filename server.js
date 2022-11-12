@@ -43,9 +43,9 @@ function start() {
 	}
 
 	server.listen(port);
-
+	
 	requestHandlers.initializeSockets(io);
-
+	
 
 
 

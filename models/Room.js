@@ -1,15 +1,21 @@
+const { Game } = require("./Game");
+
 let rooms = [];
+
+const stages = {
+	MENU: "menu",
+	PLAYING: "playing",
+	ENDSCREEN: "endscreen"
+}
 
 class Room{
 	constructor(options, admin,io){
         this.io = io//be able to contact users
 		this.admin = admin;
-		this.players = [];//admin is populated in the players list from the call from player class
+		this.players = [];
 		this.id = makeRoomId();
 		this.socketGroup = "room_"+this.id;
-		this.stage = "menu";
-
-
+		this.stage = stages.MENU;
 
 		if(options.name !== undefined && options.name !== ""){
 			this.name = options.name
@@ -30,21 +36,43 @@ class Room{
 		}
 
 	}
+	meetsGameStartConditions() {
+		return this.players.length >= 2 && this.stage === stages.MENU;
+	}
+	startNewGame() {
+		this.stage = stages.PLAYING;
+		this.game = new Game(this);
+		this.game.initialize()
+		this.emitGameState();
+	}
+	triggerGameEnd() {
+		this.stage = stages.ENDSCREEN;
+		this.emitGameState();
+	}
 	disconnect(player){
+		if(this.game && this.stage === stages.PLAYING) {
+			this.game.handlePlayerLeave(player);
+		}
         console.log("player: " + player.id + " disconnected from room: " + this.id);
         this.emit('info', player.name + " has disconnected",player);
 
-
     }
     connect(player){
+		if(this.game && this.stage === stages.PLAYING) {
+			this.game.handlePlayerJoin(player);
+		}
         console.log("player: " + player.id + " reconnected to room: " + this.id);
         this.emit('info', player.name + " has reconnected",player);
-
+		this.emitGameState();
     }
 	leave(player){//leave for good
+		if(this.game && this.stage === stages.PLAYING) {
+			this.game.handlePlayerLeave(player);
+		}
+
 		if(this.players.length === 1){
 			//remove the game
-			rooms.splice(Room.getIndexOf(this.id),1);
+			rooms.splice(Room.getIndexOf(this.id), 1);
 
 			return;
 		}
@@ -69,6 +97,13 @@ class Room{
 	join(player){
 		this.players.push(player)
 
+	}
+	emitGameState() {
+		for(let p = 0; p< this.players.length; p++){
+			 
+
+
+		}
 	}
 	emit(type,message,from){
 	    if(this.io !== undefined){
@@ -105,6 +140,10 @@ class Room{
 		safeRoom.name = this.name;
 		safeRoom.maxPlayers = this.maxPlayers;
         safeRoom.id = this.id;
+		
+		if(this.game && (this.stage === stages.PLAYING || this.stage === stages.ENDSCREEN)) {
+			safeRoom.game = this.game.serialize();
+		}
 
 		for(let p = 0; p< this.players.length; p++){
 			safeRoom.players.push(this.players[p].getSafe(depth+1))
