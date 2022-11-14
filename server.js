@@ -3,7 +3,15 @@ var http = require('http');
 var express = require('express');
 var app = express();
 var server = http.createServer(app);
-var io = require('socket.io').listen(server);
+// var io = require('socket.io').listen(server);
+// io.origins(["http://localhost:3000"]); // for local development
+
+const io = require('socket.io')(server, {
+    cors: {
+        origin: "http://localhost:3000"
+    }
+});
+
 var requestHandlers = require("./requestHandlers");
 var bodyParser = require('body-parser')
 
@@ -45,10 +53,6 @@ function start() {
 	server.listen(port);
 	
 	requestHandlers.initializeSockets(io);
-	
-
-
-
 
 
 	console.log("Server has started");

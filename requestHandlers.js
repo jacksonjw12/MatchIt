@@ -12,7 +12,7 @@ function isEmptyObject(obj) {
 function sendRooms(socket){
 	let roomsList = []
 	for(let i = 0; i< rooms.length; i++){
-		roomsList.push(rooms[i].getSafe())
+		roomsList.push(rooms[i].serialize())
 	}
 	socket.emit('listRooms', {"rooms":roomsList})
 }
@@ -34,7 +34,6 @@ function escape(s) {
 function initializeSockets(io){
 
 	io.on('connection', function (socket) {
-		
 		socket.on("login", function(userdata) {
 			if(socket.handshake.session.player === undefined || connectedPlayers.getIndexOf(socket.handshake.session.player) < 0){
 				console.log("new player")//or was disconnected too long
@@ -53,7 +52,7 @@ function initializeSockets(io){
 			if(socket.handshake.session.player !== undefined ){
 				let player = connectedPlayers.get(socket.handshake.session.player);
 				if(player !== undefined){
-					player.removeDevice();
+					player.removeDevice(socket);
 					console.log("player disconnected");
 				}
 			}
@@ -79,7 +78,7 @@ function initializeSockets(io){
 		socket.on('requestRooms', function (data){
 			let rooms = {}
 			for(let i = 0; i< rooms.length; i++){
-				rooms.push(rooms[i].getSafe())
+				rooms.push(rooms[i].serialize())
 			}
 			socket.emit('listRooms', {"rooms":rooms})
 		});
@@ -115,7 +114,7 @@ function initializeSockets(io){
 			console.log("startGame: ", data);
 			let player = connectedPlayers.get(socket.handshake.session.player);
 			let room = player.room;
-			if(isEmptyObject(player.room)){
+			if(player.room === undefined){
 				socket.emit('roomError',{"type":"error", "value":"You are not in a room."})
 				return;
 			}
@@ -128,13 +127,13 @@ function initializeSockets(io){
 
 		});
 		socket.on('endGame',function(data){
-			let player = connectedPlayers.get(socket.handshake.session.player);
-			roomName = player.room
+			// let player = connectedPlayers.get(socket.handshake.session.player);
+			// roomName = player.room
 
-			world = getWorld(roomName)
+			// world = getWorld(roomName)
 
-			endGame(world)
-			io.to(roomName).emit('roomUpdate', {"message":"game has ended", "room":getSafeWorld(world)})
+			// endGame(world)
+			// io.to(roomName).emit('roomUpdate', {"message":"game has ended", "room":getSafeWorld(world)})
 
 		});
 
@@ -142,7 +141,7 @@ function initializeSockets(io){
 			let player = connectedPlayers.get(socket.handshake.session.player);
 
 			if(player !== undefined){
-				if(!isEmptyObject(player.room)){
+				if(player.room){
 					let room = Room.get(player.room.id)
 					if( room !== undefined ){
 						socket.emit('roomError',{"type":"error", "value":"You are still connected to a different room."})
@@ -167,7 +166,7 @@ function initializeSockets(io){
 			if(player !== undefined){
 				let room = Room.get(data.room)
 				if(room !== undefined){
-					if(!isEmptyObject(player.room)){
+					if(player.room){
 						console.log(player.room.id,room.id)
 						if(player.room.id === room.id){
 							//player is still connected to this room

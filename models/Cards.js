@@ -21,6 +21,9 @@ class Cards {
     get(index){
         return this.cards[index];
     }
+    length(){
+        return this.cards.length;
+    }
     serialize(){
 
     }

@@ -6,18 +6,46 @@ class Player{
 		this.id = makePlayerId();
 		this.name = this.id;
 		this.socketGroup = "group_" + this.id;
-		this.room = {};
+		this.room = undefined;
+		this.sockets = [];
 		this.connected = false;
-
 
 		this.addDevice(socket)
 
 	}
+	syncGroups(socket) {
+		let groups = [this.socketGroup];
+		if(this.room !== undefined){
+			groups.push(this.room.socketGroup);
+			if(this.room.game != undefined) {
+				groups.push(this.room.game.socketGroup);
+			}
+		}
+		if(socket) {
+			socket.leaveAll();
+			socket.join(groups);
+		}
+		else {
+			for(let s = 0; s < this.sockets.length; s++) {
+				this.sockets[s].leaveAll();
+				this.sockets[s].join(groups);
+			}
+		}
+		
+	}
+
+	joinSocketGroup(socketGroupToJoin) {
+		for(let s = 0; s < this.sockets.length; s++) {
+			this.sockets[s].join(socketGroupToJoin)
+		}
+	}
+
+
 	sync(socket,io){
 	    if(socket !== undefined && io !== undefined){
 	        this.update(socket);//set cookie to this
 
-            io.to(this.socketGroup).emit('playerUpdate', this.getSafe())//update
+            io.to(this.socketGroup).emit('playerUpdate', this.serialize(true))//update
         }
         else{
             console.log("sync failed, Player.sync")
@@ -30,7 +58,7 @@ class Player{
 	syncNoCookie(io){//like sync
 	    if(io !== undefined){
 
-            io.to(this.socketGroup).emit('playerUpdate', this.getSafe())//update
+            io.to(this.socketGroup).emit('playerUpdate', this.serialize(true))//update
         }
         else{
             console.log("syncNoCookie failed, Player.syncNoCookie")
@@ -42,7 +70,7 @@ class Player{
 	    this.name = name;
 	    this.sync(socket,io)
         io.to(this.socketGroup).emit('nameChanged',{"name":this.name})
-        if(!isEmptyObject(this.room)){
+        if(this.room !== undefined){
             this.room.emit("info",oldName + " has changed their name to " + this.name,this);
 
         }
@@ -50,37 +78,27 @@ class Player{
 
     }
 	update(socket){
-		socket.join(this.socketGroup);
-		socket.handshake.session.player =this.getSafe();// {"id":this.id,"socketGroup":this.socketGroup,"room":this.room};
+		this.syncGroups(socket);
+		socket.handshake.session.player = this.serialize(true);// {"id":this.id,"socketGroup":this.socketGroup,"room":this.room};
 		socket.handshake.session.save();
 	}
-	getSafe(depth){
-        if(depth === undefined){
-            depth = 0;
-        }
+	serialize(includeRoom){
 		let safePlayer = {};
 		safePlayer.id = this.id
 		safePlayer.name = this.name
 		safePlayer.socketGroup = this.socketGroup;
 		safePlayer.connectedDevices = this.connectedDevices;
 		safePlayer.connected = this.connected;
-		if(isEmptyObject(this.room) || depth >= 2){
-			safePlayer.room = {}
-		}
-		else if(depth < 2){
-			safePlayer.room = this.room.getSafe(depth+1)
-		}
-
+		safePlayer.room = includeRoom && this.room ? this.room.serialize() : {};
 		return safePlayer;
 	}
 
 	addDevice(socket){
-
 		if(this.connectedDevices === 0){
 		    clearTimeout(this.timeToRemoval);
             clearTimeout(this.timeToKick);
             //console.log(this)
-			if(this.room.id && !this.connected){
+			if(this.room && !this.connected){
 			    this.connected = true;
 			    this.room.connect(this);
             }
@@ -88,11 +106,34 @@ class Player{
 		}
 		this.connected = true;
 		this.connectedDevices++;
+		
+		let found = false;
+		for(let s = 0; s < this.sockets.length; s++){
+			if(this.sockets[s].id === socket.id){
+				found = true;
+				break;
+			}
+		}
+		if(!found) {
+			this.sockets.push(socket);
+		}
+
 		this.update(socket)
 
 	}
-	removeDevice(){
+	removeDevice(socket){
 		this.connectedDevices--;
+
+		let foundId = -1;
+		for(let s = 0; s < this.sockets.length; s++){
+			if(this.sockets[s].id === socket.id){
+				foundId = s;
+				break;
+			}
+		}
+		if(foundId > 0){
+			this.sockets.splice(foundId, 1);
+		}
 
 		if(this.connectedDevices === 0){
 			this.connected = false;
@@ -106,18 +147,20 @@ class Player{
 
 		room.join(this);
         this.sync(socket,io);
-		io.to(this.socketGroup).emit('roomConnection', {})
+		io.to(this.socketGroup).emit('roomConnection', room.serialize());
+		room.emitRoomState();
 
 	}
 	leaveRoom(io,socket){
-		if(!isEmptyObject(this.room)){
-			this.room.leave(this,io);
-			this.room = {};
-			this.sync(socket,io);
-			io.to(this.socketGroup).emit('roomLeft', {})
+		if(!this.room){
+			return;
 		}
-
-
+		leaveSocketGroup(this.room.socketGroup);
+		this.room.leave(this,io);
+		this.room = {};
+		this.sync(socket,io);
+		io.to(this.socketGroup).emit('roomLeft', {})
+		
 
 	}
 	static disconnect(player){

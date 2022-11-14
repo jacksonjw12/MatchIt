@@ -1,7 +1,7 @@
 let socket;
 let player = {}
-
 let room = {}
+let game = {};
 let lastState = "lobby"
 
 function isEmptyObject(obj) {
@@ -189,7 +189,7 @@ function render(){
 		}
 
 	}
-	else if(data.room.stage === "game"){
+	else if(data.room.stage === "playing"){
 		showRoomSidebars()
 		document.getElementById("intro").style.display = 'none';
 		document.getElementById("menu").style.display = 'none';
@@ -351,15 +351,7 @@ function main(){
 	socket.on('listRooms',function(data){
 		console.log(data)
 		displayRooms(data.rooms)
-		// let string = "<h2 class='currentRooms'>Current Rooms</h2><div class='roomTableContainer'><table class='roomTable' style='text-align:center;'><tr><th>Name</th><th># Players</th><th></th></tr>"
-		// 	for(let r in data.rooms){
-		// 		let room = data.rooms[r];
-		// 		string += "<tr><td>" + room.name + "</td><td>" + room.players.length + '/' + room.maxPlayers + '</td><td><button class="connectButton" onclick="connectRoom('+"'"+ room.id +"'"+')">Connect</button</td</tr>'
-		//
-		// 	}
-		// 	string += "</table></div>"
-		//
-		// 	document.getElementById('intro_rooms').innerHTML = string
+		
 	});
 
 	socket.on("logged_in", function(data) {
@@ -391,15 +383,15 @@ function main(){
 
 
 	socket.on('roomConnection', function(data){//contains room and our new id
-
+		console.log('roomConnection', data);
 
 		info({"type":"info","value":"Joined Room"})
 	});
 
 	socket.on('playerUpdate',function (data){
 		player = data;
-		console.log("player update",player)
-		render()
+		console.log("player update", player);
+		render();
 	})
 
 	socket.on('roomError',function(data){
@@ -407,8 +399,11 @@ function main(){
 		info(data)
 	})
 	socket.on('roomUpdate', function (data) {//contains room
-		console.log("room was updated")
+		console.log("room was updated", data);
+	});
 
+	socket.on('gameUpdate', function (data) {
+		console.log("Game was updated", data);
 	});
 	socket.on('roomLeft',function(data){
 		document.getElementById("intro").style.display = 'block';

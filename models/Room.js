@@ -40,14 +40,19 @@ class Room{
 		return this.players.length >= 2 && this.stage === stages.MENU;
 	}
 	startNewGame() {
+		if(this.stage === stages.ENDSCREEN) {
+			this.game.remove();
+		}
+
 		this.stage = stages.PLAYING;
-		this.game = new Game(this);
-		this.game.initialize()
-		this.emitGameState();
+		console.log("Playing Game");
+		this.game = new Game(this, this.io);
+		
+		this.emitRoomState();
 	}
 	triggerGameEnd() {
 		this.stage = stages.ENDSCREEN;
-		this.emitGameState();
+		this.emitRoomState();
 	}
 	disconnect(player){
 		if(this.game && this.stage === stages.PLAYING) {
@@ -63,7 +68,7 @@ class Room{
 		}
         console.log("player: " + player.id + " reconnected to room: " + this.id);
         this.emit('info', player.name + " has reconnected",player);
-		this.emitGameState();
+		this.emitRoomState();
     }
 	leave(player){//leave for good
 		if(this.game && this.stage === stages.PLAYING) {
@@ -71,8 +76,8 @@ class Room{
 		}
 
 		if(this.players.length === 1){
-			//remove the game
-			rooms.splice(Room.getIndexOf(this.id), 1);
+			//Delete self.
+			this.remove();
 
 			return;
 		}
@@ -98,12 +103,10 @@ class Room{
 		this.players.push(player)
 
 	}
-	emitGameState() {
-		for(let p = 0; p< this.players.length; p++){
-			 
-
-
-		}
+	emitRoomState() {
+		let roomState = this.serialize();
+		this.io.to(this.socketGroup).emit('roomUpdate', roomState)
+		
 	}
 	emit(type,message,from){
 	    if(this.io !== undefined){
@@ -128,29 +131,30 @@ class Room{
 
 	}
 
-	getSafe(depth){
-	    if(depth === undefined){
-            depth = 1;
-        }
+	serialize(){
 		let safeRoom = {};
-		safeRoom.admin = this.admin.getSafe(depth+1);
-		safeRoom.players = [];
+		safeRoom.admin = this.admin.serialize();
 		safeRoom.stage = this.stage;
 		safeRoom.socketGroup = this.socketGroup;
 		safeRoom.name = this.name;
 		safeRoom.maxPlayers = this.maxPlayers;
         safeRoom.id = this.id;
 		
-		if(this.game && (this.stage === stages.PLAYING || this.stage === stages.ENDSCREEN)) {
-			safeRoom.game = this.game.serialize();
-		}
-
+		// if(this.game && (this.stage === stages.PLAYING || this.stage === stages.ENDSCREEN)) {
+		// 	safeRoom.game = this.game.serialize();
+		// }
+		safeRoom.players = [];
 		for(let p = 0; p< this.players.length; p++){
-			safeRoom.players.push(this.players[p].getSafe(depth+1))
+			safeRoom.players.push(this.players[p].serialize(false))
 		}
-		return safeRoom
+		return safeRoom;
 
 	}
+
+	remove() {
+		rooms.splice(Room.getIndexOf(this.id), 1);
+	}
+
 	static get(id){
 		if(id === undefined){
 			return undefined
@@ -176,7 +180,7 @@ class Room{
 	}
 
 }
-function makeRoomId(){
+function makeRoomId() {
 	let foundGoodId = false;
 	while(!foundGoodId){
 		let id = makeId();
@@ -193,8 +197,7 @@ function makeRoomId(){
 		}
 	}
 }
-function makeId()
-{
+function makeId() {
     let text = "";
     let possible = "ABCDE0123456789";
 
@@ -203,5 +206,5 @@ function makeId()
 
     return text;
 }
-exports.Room = Room;
-exports.rooms = rooms;
+module.exports = {Room, rooms};
+
