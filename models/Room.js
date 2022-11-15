@@ -131,9 +131,9 @@ class Room{
 
 	}
 
-	serialize(){
+	serialize(includePlayers=false){
 		let safeRoom = {};
-		safeRoom.admin = this.admin.serialize();
+		safeRoom.admin = includePlayers ? this.admin.serialize() : undefined;
 		safeRoom.stage = this.stage;
 		safeRoom.socketGroup = this.socketGroup;
 		safeRoom.name = this.name;
@@ -143,10 +143,14 @@ class Room{
 		// if(this.game && (this.stage === stages.PLAYING || this.stage === stages.ENDSCREEN)) {
 		// 	safeRoom.game = this.game.serialize();
 		// }
-		safeRoom.players = [];
-		for(let p = 0; p< this.players.length; p++){
-			safeRoom.players.push(this.players[p].serialize(false))
+		if(includePlayers || true) {
+			safeRoom.players = [];
+			for(let p = 0; p< this.players.length; p++){
+				safeRoom.players.push(this.players[p].serialize(false))
+			}
 		}
+		safeRoom.numPlayers = this.players.length;
+		
 		return safeRoom;
 
 	}

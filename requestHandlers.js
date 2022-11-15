@@ -12,7 +12,7 @@ function isEmptyObject(obj) {
 function sendRooms(socket){
 	let roomsList = []
 	for(let i = 0; i< rooms.length; i++){
-		roomsList.push(rooms[i].serialize())
+		roomsList.push(rooms[i].serialize(false))
 	}
 	socket.emit('listRooms', {"rooms":roomsList})
 }
@@ -76,11 +76,14 @@ function initializeSockets(io){
 		})
 
 		socket.on('requestRooms', function (data){
-			let rooms = {}
-			for(let i = 0; i< rooms.length; i++){
-				rooms.push(rooms[i].serialize())
+			let roomList = [];
+			for(let r in rooms){
+				let room = rooms[r];
+				roomList.push({"name":room.name,"id":room.id,"numPlayers":room.players.length,"maxPlayers":room.maxPlayers})
 			}
-			socket.emit('listRooms', {"rooms":rooms})
+			console.log("numRooms: ", rooms.length);
+			socket.emit('listRooms', {"rooms":roomList})
+			
 		});
 
 		socket.on('requestInfo',function(data){

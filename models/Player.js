@@ -155,7 +155,7 @@ class Player{
 		if(!this.room){
 			return;
 		}
-		leaveSocketGroup(this.room.socketGroup);
+		this.leaveSocketGroup(this.room.socketGroup);
 		this.room.leave(this,io);
 		this.room = {};
 		this.sync(socket,io);
@@ -165,7 +165,7 @@ class Player{
 	}
 	static disconnect(player){
 	    player.connected = false;
-	    if(player.room.id){
+	    if(player.room && player.room.id){
 	        player.room.disconnect(player)
         }
 
@@ -173,7 +173,7 @@ class Player{
 
 	static remove(player,io){
 		console.log("removing player")
-        if(player.room.id){
+        if(player.room && player.room.id){
             player.room.leave(player,io)
         }
 		connectedPlayers.splice(connectedPlayers.getIndexOf(player))
